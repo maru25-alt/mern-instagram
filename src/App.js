@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
-import "./App.css";
+import "./css/App.css";
 import Post from "./Post";
 import ImageUpload from "./ImageUpload";
-import { db, auth } from "./firebase";
+import {  auth } from "./store/firebase";
 import { Button, Avatar, makeStyles, Modal, Input } from "@material-ui/core";
 import FlipMove from "react-flip-move";
 import InstagramEmbed from "react-instagram-embed";
+import axios from './store/axios';
+import  Pusher from 'pusher-js'
+
+Pusher.logToConsole = true;
 
 function getModalStyle() {
   const top = 50;
@@ -66,12 +70,25 @@ function App() {
     };
   }, [user, username]);
 
+
+  const fetchPosts = async ()=> await axios.get('/sync').then(res => {
+    setPosts(res.data.map(item => item))
+    console.log(res.data.map(item => item))
+ })
+
   useEffect(() => {
-    db.collection("posts")
-      .orderBy("timestamp", "desc")
-      .onSnapshot((snapshot) =>
-        setPosts(snapshot.docs.map((doc) => ({ id: doc.id, post: doc.data() })))
-      );
+    fetchPosts();
+  }, []);
+
+  useEffect(() =>{
+    const pusher = new Pusher('d79352588c07e1bb5c0d', {
+      cluster: 'us3'
+    });
+    const channel = pusher.subscribe('posts');
+    channel.bind('inserted', (data) =>{
+        console.log("data received")
+        fetchPosts()
+    });
   }, []);
 
   const handleLogin = (e) => {
@@ -180,21 +197,21 @@ function App() {
       <div className="app__posts">
         <div className="app__postsLeft">
           <FlipMove>
-            {posts.map(({ id, post }) => (
+            {posts.map(({ _id, caption, imageUrl, username }) => (
               <Post
                 user={user}
-                key={id}
-                postId={id}
-                username={post.username}
-                caption={post.caption}
-                imageUrl={post.imageUrl}
+                key={_id}
+                postId={_id}
+                username={username}
+                caption={caption}
+                imageUrl={imageUrl}
               />
             ))}
           </FlipMove>
         </div>
         <div className="app__postsRight">
           <InstagramEmbed
-            url="https://www.instagram.com/p/B_uf9dmAGPw/"
+            url="https://www.instagram.com/p/B_uiIuQHeJn/"
             maxWidth={320}
             hideCaption={false}
             containerTagName="div"

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, forwardRef } from "react";
-import "./Post.css";
+import "./css/Post.css";
 import Avatar from "@material-ui/core/Avatar";
-import { db } from "./firebase";
-import firebase from "firebase";
+import { db } from "./store/firebase";
+import firebase from "./store/firebase";
 
 const Post = forwardRef(
   ({ user, username, postId, imageUrl, caption }, ref) => {
@@ -44,7 +44,7 @@ const Post = forwardRef(
             alt={username}
             src="/static/images/avatar/1.jpg"
           />
-          <h3>{username}</h3>
+        {username &&    <h3>{ username} </h3>}
         </div>
 
         <img className="post__image" src={imageUrl} alt="post" />
@@ -53,7 +53,7 @@ const Post = forwardRef(
         </h4>
 
         <div className="post__comments">
-          {comments.map((comment) => (
+          {comments && comments.map((comment) => (
             <p>
               <b>{comment.username}</b> {comment.text}
             </p>
